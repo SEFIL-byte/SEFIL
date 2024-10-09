@@ -1,77 +1,275 @@
-local a=game.Players.LocalPlayer
-local b=a:GetMouse()
-local c=game.Workspace.CurrentCamera
-local d=game:GetService("UserInputService")
-local e=game:GetService("RunService")
-local f=game:GetService("Players")
-local g=a:WaitForChild("PlayerGui")
-local h=false
-local i=50
-local j=16
-local k=Enum.KeyCode.LeftShift
-local l=Enum.KeyCode.RightControl
-local m={n=Enum.KeyCode.E,o=Enum.KeyCode.Q}
-local p=nil
-local q
-local r
-local s
-local t=function()
-if q then q:Destroy()end
-q=Instance.new("ScreenGui",g)q.Name="RandomGui"q.ResetOnSpawn=false
-r=Instance.new("Frame",q)r.Size=UDim2.new(0,300,0,300)r.Position=UDim2.new(1,-320,0.5,-150)r.BackgroundColor3=Color3.new(0.2,0.2,0.2)r.Visible=false
-local u=Instance.new("TextLabel",r)u.Size=UDim2.new(1,0,0,50)u.Position=UDim2.new(0,0,0,0)u.Text="Speed: "..i
-u.TextColor3=Color3.new(1,1,1)u.BackgroundTransparency=1
-local v=Instance.new("Frame",r)v.Size=UDim2.new(1,0,0,50)v.Position=UDim2.new(0,0,0,60)v.BackgroundColor3=Color3.new(0.5,0.5,0.5)
-local w=Instance.new("TextButton",v)w.Size=UDim2.new(0,20,1,0)w.Position=UDim2.new(0,0,0,0)w.Text=""w.BackgroundColor3=Color3.new(1,0,0)
-local x=Instance.new("TextButton",r)x.Size=UDim2.new(1,0,0,50)x.Position=UDim2.new(0,0,0,120)x.Text="Lock Key: "..m.n.Name
-x.BackgroundColor3=Color3.new(1,0,0)
-local y=Instance.new("TextButton",r)y.Size=UDim2.new(1,0,0,50)y.Position=UDim2.new(0,0,0,180)y.Text="Unlock Key: "..m.o.Name
-y.BackgroundColor3=Color3.new(0,0,1)
-local z=Instance.new("TextButton",r)z.Size=UDim2.new(1,0,0,50)z.Position=UDim2.new(0,0,0,240)z.Text="Slider Key: "..k.Name
-z.BackgroundColor3=Color3.new(0,1,0)
-p=Instance.new("Frame",q)p.Size=UDim2.new(0,100,0,100)p.Position=UDim2.new(0,0,0,0)p.AnchorPoint=Vector2.new(0.5,0.5)p.BackgroundColor3=Color3.new(1,1,1)
-p.BackgroundTransparency=1
-p.BorderSizePixel=0
-p.ZIndex=10
-local aa=Instance.new("UIStroke",p)aa.Thickness=2
-aa.Color=Color3.new(1,1,1)aa.LineJoinMode=Enum.LineJoinMode.Round
-local function ab()local ac=w.Position.X.Scale
-i=math.floor(ac*100)u.Text="Speed: "..i end
-w.MouseButton1Down:Connect(function()local ad
-ad=e.RenderStepped:Connect(function()local ae=d:GetMouseLocation().X-v.AbsolutePosition.X
-local af=math.clamp(ae,0,v.AbsoluteSize.X)local ag=af/v.AbsoluteSize.X
-w.Position=UDim2.new(ag,0,0,0)ab()end)
-d.InputEnded:Connect(function(ah)if ah.UserInputType==Enum.UserInputType.MouseButton1 then ad:Disconnect()end end)end)
-x.MouseButton1Click:Connect(function()x.Text="Press a key..."local ai
-ai=d.InputBegan:Connect(function(aj,ak)if ak then return end
-m.n=aj.KeyCode
-x.Text="Lock Key: "..m.n.Name
-ai:Disconnect()end)end)
-y.MouseButton1Click:Connect(function()y.Text="Press a key..."local al
-al=d.InputBegan:Connect(function(am,an)if an then return end
-m.o=am.KeyCode
-y.Text="Unlock Key: "..m.o.Name
-al:Disconnect()end)end)
-z.MouseButton1Click:Connect(function()z.Text="Press a key..."local ao
-ao=d.InputBegan:Connect(function(ap,aq)if aq then return end
-k=ap.KeyCode
-z.Text="Slider Key: "..k.Name
-ao:Disconnect()end)end)
-e.RenderStepped:Connect(function()local ar=a.Character or a.CharacterAdded:Wait()local as=ar:WaitForChild("Humanoid")local at=h and i or j
-as.WalkSpeed=at
-p.Position=UDim2.new(0,b.X,0,b.Y)
-if p and p.Character then local au=p.Character.HumanoidRootPart.Position
-c.CFrame=CFrame.new(c.CFrame.Position,au)end end)end
-local function av(aw)if not aw or not aw:FindFirstChild("HumanoidRootPart") then return nil end
-local ax=aw.HumanoidRootPart.Position
-local ay=f.LocalPlayer:GetNetworkPing()local az=(ax-c.CFrame.Position).Magnitude/100
-local ba=ax+(aw.HumanoidRootPart.Velocity*(ay/1000+az)) return ba end
-local function bb(bc)local bd=50 local be=Vector3.new(b.X,b.Y,b.Z)local bf=(be-bc).Magnitude return bf<=bd end
-local function bg()local bh=nil
-local bi=math.huge
-for _,bj in ipairs(f:GetPlayers())do if bj~=a and bj.Character and bj.Character:FindFirstChild("HumanoidRootPart")then local bk=bj.Character.HumanoidRootPart.Position
-if bb(bk)then local bl=(c.CFrame.Position-bk).Magnitude if bl<bi then bi=bl bh=bj end end end end
-if bh then p=bh end end
-local function bm()if d:IsKeyDown(k)then h=true else h=false end
-bg()end
-t()e.RenderStepped:Connect(bm)
+-- Combined Camera Lock-On and Sprint Speed Script with Persistent GUI
+
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+local camera = game.Workspace.CurrentCamera
+local uis = game:GetService("UserInputService")
+local rs = game:GetService("RunService")
+local Players = game:GetService("Players")
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Default values for sprinting
+local isSprinting = false
+local sprintSpeed = 50 -- Default sprint speed
+local defaultSpeed = 16 -- Default Roblox walk speed
+local sprintKey = Enum.KeyCode.LeftShift -- Default sprint key
+local guiToggleKey = Enum.KeyCode.RightControl -- Key to toggle the GUI visibility
+
+local keybinds = {
+    LockOnKey = Enum.KeyCode.E, -- Default key for Lock On
+    UnlockKey = Enum.KeyCode.Q -- Default key for Unlock
+}
+
+local lockedPlayer = nil -- Variable to hold the currently locked player
+
+-- GUI variables
+local screenGui
+local guiFrame
+local fovCircle
+
+-- Create a ScreenGui for keybinds and sprint settings
+local function createGUI()
+    if screenGui then
+        screenGui:Destroy() -- Destroy existing GUI to recreate
+    end
+
+    screenGui = Instance.new("ScreenGui", playerGui)
+    screenGui.Name = "CombinedGui"
+    screenGui.ResetOnSpawn = false
+
+    -- Create a Frame for the GUI
+    guiFrame = Instance.new("Frame", screenGui)
+    guiFrame.Size = UDim2.new(0, 300, 0, 300)
+    guiFrame.Position = UDim2.new(1, -320, 0.5, -150) -- Middle right position
+    guiFrame.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2) -- Dark background
+    guiFrame.Visible = true -- Start with the GUI visible
+
+    -- Create a draggable title bar
+    local titleBar = Instance.new("Frame", guiFrame)
+    titleBar.Size = UDim2.new(1, 0, 0, 30)
+    titleBar.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1) -- Darker background for the title bar
+    titleBar.BorderSizePixel = 0
+
+    local dragging = false
+    local dragInput, dragStart, startPos
+
+    titleBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = guiFrame.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    titleBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
+        end
+    end)
+
+    rs.RenderStepped:Connect(function()
+        if dragging then
+            local delta = dragInput.Position - dragStart
+            guiFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+
+    -- Create a TextLabel for the sprint speed display
+    local speedLabel = Instance.new("TextLabel", guiFrame)
+    speedLabel.Size = UDim2.new(1, 0, 0, 50)
+    speedLabel.Position = UDim2.new(0, 0, 0, 30)
+    speedLabel.Text = "Sprint Speed: " .. sprintSpeed
+    speedLabel.TextColor3 = Color3.new(1, 1, 1)
+    speedLabel.BackgroundTransparency = 1
+
+    -- Create a Slider for speed adjustment
+    local sliderFrame = Instance.new("Frame", guiFrame)
+    sliderFrame.Size = UDim2.new(1, 0, 0, 50)
+    sliderFrame.Position = UDim2.new(0, 0, 0, 90)
+    sliderFrame.BackgroundColor3 = Color3.new(0.5, 0.5, 0.5)
+
+    local sliderButton = Instance.new("TextButton", sliderFrame)
+    sliderButton.Size = UDim2.new(0, 20, 1, 0)
+    sliderButton.Position = UDim2.new(0, 0, 0, 0)
+    sliderButton.Text = ""
+    sliderButton.BackgroundColor3 = Color3.new(1, 0, 0)
+
+    -- Create Keybind buttons
+    local lockKeyButton = Instance.new("TextButton", guiFrame)
+    lockKeyButton.Size = UDim2.new(1, 0, 0, 50)
+    lockKeyButton.Position = UDim2.new(0, 0, 0, 150)
+    lockKeyButton.Text = "Lock On Key: " .. keybinds.LockOnKey.Name
+    lockKeyButton.BackgroundColor3 = Color3.new(1, 0, 0)
+
+    local unlockKeyButton = Instance.new("TextButton", guiFrame)
+    unlockKeyButton.Size = UDim2.new(1, 0, 0, 50)
+    unlockKeyButton.Position = UDim2.new(0, 0, 0, 210)
+    unlockKeyButton.Text = "Unlock Key: " .. keybinds.UnlockKey.Name
+    unlockKeyButton.BackgroundColor3 = Color3.new(0, 0, 1)
+
+    -- Create a Keybind button for changing the slider keybind
+    local sliderKeyButton = Instance.new("TextButton", guiFrame)
+    sliderKeyButton.Size = UDim2.new(1, 0, 0, 50)
+    sliderKeyButton.Position = UDim2.new(0, 0, 0, 270)
+    sliderKeyButton.Text = "Slider Key: " .. sprintKey.Name
+    sliderKeyButton.BackgroundColor3 = Color3.new(0, 1, 0) -- Green color
+
+    -- FOV Circle
+    fovCircle = Instance.new("Frame", screenGui)
+    fovCircle.Size = UDim2.new(0, 100, 0, 100) -- Adjust size for FOV
+    fovCircle.Position = UDim2.new(0, mouse.X - 50, 0, mouse.Y - 50) -- Centered around the mouse
+    fovCircle.AnchorPoint = Vector2.new(0.5, 0.5) -- Center the circle
+    fovCircle.BackgroundColor3 = Color3.new(1, 1, 1)
+    fovCircle.BackgroundTransparency = 1 -- Make background transparent
+    fovCircle.BorderSizePixel = 0
+    fovCircle.ZIndex = 10
+
+    -- Add a UIStroke for the outline effect
+    local uiStroke = Instance.new("UIStroke", fovCircle)
+    uiStroke.Thickness = 2
+    uiStroke.Color = Color3.new(1, 1, 1) -- White outline color
+    uiStroke.LineJoinMode = Enum.LineJoinMode.Round -- Make the edges smooth
+
+    -- Set the corner radius to make it circular
+    fovCircle.Size = UDim2.new(0, 100, 0, 100)
+    local cornerRadius = Instance.new("UICorner", fovCircle)
+    cornerRadius.CornerRadius = UDim.new(0, 50) -- Makes it a perfect circle
+
+    -- Function to update speed based on slider position
+    local function updateSpeed()
+        local sliderValue = sliderButton.Position.X.Scale
+        sprintSpeed = math.floor(sliderValue * 100) -- Convert slider position to speed
+        speedLabel.Text = "Sprint Speed: " .. sprintSpeed -- Update speed display
+    end
+
+    -- Dragging functionality for the slider
+    sliderButton.MouseButton1Down:Connect(function()
+        local dragConnection
+        dragConnection = rs.RenderStepped:Connect(function()
+            local mousePos = uis:GetMouseLocation().X - sliderFrame.AbsolutePosition.X
+            local clampedX = math.clamp(mousePos, 0, sliderFrame.AbsoluteSize.X)
+            local sliderPercent = clampedX / sliderFrame.AbsoluteSize.X
+            sliderButton.Position = UDim2.new(sliderPercent, 0, 0, 0)
+            updateSpeed()
+        end)
+
+        uis.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                dragConnection:Disconnect()
+            end
+        end)
+    end)
+
+    -- Click to change the lock keybind
+    lockKeyButton.MouseButton1Click:Connect(function()
+        lockKeyButton.Text = "Press a key..."
+        local keyPressConnection
+        keyPressConnection = uis.InputBegan:Connect(function(input, gameProcessed)
+            if gameProcessed then return end
+            keybinds.LockOnKey = input.KeyCode
+            lockKeyButton.Text = "Lock On Key: " .. keybinds.LockOnKey.Name
+            keyPressConnection:Disconnect()
+        end)
+    end)
+
+    -- Click to change the unlock keybind
+    unlockKeyButton.MouseButton1Click:Connect(function()
+        unlockKeyButton.Text = "Press a key..."
+        local keyPressConnection
+        keyPressConnection = uis.InputBegan:Connect(function(input, gameProcessed)
+            if gameProcessed then return end
+            keybinds.UnlockKey = input.KeyCode
+            unlockKeyButton.Text = "Unlock Key: " .. keybinds.UnlockKey.Name
+            keyPressConnection:Disconnect()
+        end)
+    end)
+
+    -- Click to change the slider keybind
+    sliderKeyButton.MouseButton1Click:Connect(function()
+        sliderKeyButton.Text = "Press a key..."
+        local keyPressConnection
+        keyPressConnection = uis.InputBegan:Connect(function(input, gameProcessed)
+            if gameProcessed then return end
+            sprintKey = input.KeyCode
+            sliderKeyButton.Text = "Slider Key: " .. sprintKey.Name
+            keyPressConnection:Disconnect()
+        end)
+    end)
+end
+
+-- Camera lock-on functionality
+local function lockOn()
+    if lockedPlayer and lockedPlayer.Character and lockedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        -- Lock onto the player without changing the camera type
+        local targetPosition = lockedPlayer.Character.HumanoidRootPart.Position
+        local playerPosition = player.Character.HumanoidRootPart.Position
+
+        -- Maintain the camera behind the character but focus on the locked player
+        local offset = (targetPosition - playerPosition).unit * -10 + Vector3.new(0, 2, 0) -- Adjust these values for better view
+        camera.CFrame = CFrame.new(playerPosition + offset, targetPosition)
+    end
+end
+
+-- Function to check for players in FOV centered around the mouse
+local function getNearestPlayer()
+    local closestPlayer = nil
+    local closestDistance = math.huge
+    local fovRadius = 100 -- Set your FOV radius here (adjust as needed)
+
+    for _, otherPlayer in ipairs(Players:GetPlayers()) do
+        if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local rootPart = otherPlayer.Character.HumanoidRootPart
+            local screenPosition, onScreen = camera:WorldToScreenPoint(rootPart.Position)
+            local distance = (Vector2.new(screenPosition.X, screenPosition.Y) - Vector2.new(mouse.X, mouse.Y)).Magnitude
+
+            -- Check if the player is on screen and within the FOV radius
+            if onScreen and distance < fovRadius then
+                closestPlayer = otherPlayer
+                break -- Break on first found player within FOV
+            end
+        end
+    end
+
+    return closestPlayer
+end
+
+-- Input handling for locking on, unlocking, and sprinting
+uis.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+
+    if input.KeyCode == keybinds.LockOnKey then
+        lockedPlayer = getNearestPlayer()
+        lockOn()
+    elseif input.KeyCode == keybinds.UnlockKey then
+        lockedPlayer = nil
+    elseif input.KeyCode == sprintKey then
+        isSprinting = not isSprinting
+        -- Update player speed based on sprinting status
+        if isSprinting then
+            player.Character.Humanoid.WalkSpeed = sprintSpeed
+        else
+            player.Character.Humanoid.WalkSpeed = defaultSpeed
+        end
+    elseif input.KeyCode == guiToggleKey then
+        guiFrame.Visible = not guiFrame.Visible -- Toggle GUI visibility
+    end
+end)
+
+-- Update the camera lock in a loop
+rs.RenderStepped:Connect(function()
+    if lockedPlayer then
+        lockOn() -- Call lockOn each frame to update the camera position
+    end
+
+    -- Update the FOV circle position to perfectly follow the mouse
+    fovCircle.Position = UDim2.new(0, mouse.X - 50, 0, mouse.Y - 50) -- Centered around the mouse
+end)
+
+-- Initialize the GUI
+createGUI()
